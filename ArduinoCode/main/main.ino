@@ -1,37 +1,73 @@
 #include <stdint.h>
 
-#define GPIO_D0 16
-#define GPIO_D1 5
-#define GPIO_D2 4
-#define GPIO_D3 0
-#define GPIO_D4 2
+#define toggle(a) a = -a;
 
-const uint8_t DATA = 5;
-const uint8_t SYNC = 4;
+struct button_state_t{
+  uint8_t pin;
+  bool isOn;
+  bool state;
+};
 
-const uint8_t a = 1000;
-const uint8_t b = 1200;
-const uint8_t c = 11;
-const uint8_t d = 6500; 
+//output pins
+const uint8_t DATA = 1;
+const uint8_t SYNC = 2;
+
+//Pulsetrain pararmeters
+const int a = 1000;
+const int b = 1200;
+const int c = 11;
+const int d = 6500; 
+
+//input pins
+button_state_t OUTPUT_ENABLE;
+button_state_t OUTPUT_SELECT;
+
+const int32_t input_check_time = 1000;
+int32_t last_check_time = 0;
 
 void setup() {
   Serial.begin(9600);
   pinMode(DATA, OUTPUT);
   pinMode(SYNC, OUTPUT);
 
+  //input state setup (pin, prevState, state)
+  OUTPUT_ENABLE = {5, 0, 1};
+  OUTPUT_SELECT = {6, 0, 0};
+
+  pinMode(OUTPUT_ENABLE.pin, INPUT);
+  pinMode(OUTPUT_SELECT.pin, INPUT);
+
 }
 
 void loop() {
-  createPulseTrain();
+
+  //check input pins before starting next pulse train 
+  checkInputPin(&OUTPUT_ENABLE);
+  checkInputPin(&OUTPUT_SELECT);
+
+  if (OUTPUT_ENABLE.state){
+    createPulseTrain();
+  }
 
 }
 
-void createPulseTrain(){
-  Serial.println("starting new train");
-  createSyncPulse();
-    for (int i=1; i < c+1; i++){
-      createPulse(getT(a), b);
+void checkInputPin(button_state_t *state){
+    bool input = digitalRead(state->pin);
+    if (input){
+      state->state = state->state ? 0 : 1;
     }
+    //pause input until button is unpressed to avoid infinite toggling / faulty buttons
+    while(digitalRead(state->pin)){
+      continue;
+    }
+}
+
+void createPulseTrain(){
+  createSyncPulse();
+  for (int i=1; i <= getC(); i++){
+    createPulse(getT(i), b);
+  }
+  digitalWrite(DATA, LOW);
   delayMicroseconds(d);
 }
 
@@ -50,4 +86,8 @@ void createSyncPulse(){
 
 int getT(int n){
   return a + ((n-1) * 50);
+}
+
+int getC(){
+  return c - ((OUTPUT_SELECT.state) ? 3 : 0);
 }

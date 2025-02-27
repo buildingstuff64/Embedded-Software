@@ -1,0 +1,13 @@
+{
+    "C_Cpp.intelliSenseEngine": "default",
+    "idf.espIdfPathWin": "C:\\Users\\Ben\\esp\\v5.4\\esp-idf",
+    "idf.toolsPathWin": "C:\\Users\\Ben\\.espressif",
+    "idf.portWin": "COM16",
+    "idf.flashType": "UART",
+    "idf.openOcdConfigs": [
+        "board/esp32c3-builtin.cfg"
+    ],
+    "files.associations": {
+        "task.h": "c"
+    }
+}

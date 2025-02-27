@@ -1,0 +1,2 @@
+ESP/Coursework1/build
+ESP/Coursework1/managed_components
